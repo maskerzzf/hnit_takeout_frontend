@@ -86,9 +86,9 @@ const goSearch=()=>{
 const goRank = ()=>{
   window.scrollTo(0, 460)
 }
-const valueRank = ref('');
+const valueRank = ref('default');
 const optionRank = [
-      { text: '默认排序', value: '' },
+      { text: '默认排序', value: 'default' },
       { text: '好评排序', value: 'score' },
       { text: '销量排序', value: 'sold' },
       { text: '均价排序', value: 'avg_price'}

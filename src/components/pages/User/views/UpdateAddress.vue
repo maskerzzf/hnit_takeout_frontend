@@ -107,8 +107,9 @@ const saveAddress = async()=>{
         showToast('请输入正确的手机号')
     }else{
     newAddress.value.gender = checked.value
+    newAddress.value.userId = store.state.user.user.id
     await store.dispatch('saveAddress',newAddress.value)
-   
+    
 }
 }
 //删除地址
@@ -131,8 +132,12 @@ const saveFlag =  computed(()=>{
     return store.state.address.saveFlag
 })
 watch(saveFlag,(newValue,oldValue)=>{
-    showToast(newValue)
+    showToast(newValue) 
     if(newValue === saveSuccess ){
+        Object.keys(newAddress.value as AddressState["address"]).forEach((key)=> {          
+            newAddress.value[key as keyof typeof newAddress.value]= ''
+        })
+        console.log(newAddress.value)
         router.replace('/address')
     }
 },{deep:true})
@@ -152,15 +157,15 @@ watch(()=>{return address},(newValue,oldValue)=>{
     newAddress.value = newValue.value
 },{deep:true,immediate:true})
 watch(()=>{
-    route.params
+    props.id
 },async(_newValue,_oldValue)=>{
     newAddress.value.address = route.params.pioaddress as string
     newAddress.value.lat = route.params.lat as string
     newAddress.value.lng = route.params.lng as string
     if(props.id){
        await store.dispatch('showAddress',props.id)
-       showDelete.value = true
     }
+    showDelete.value = true
 }, {deep: true,immediate:true})
 
 </script>
