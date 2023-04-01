@@ -13,7 +13,7 @@ export const reqGetUserInfo =(loginForm:{phone:string,code:string})=>{
 export const reqGetAddressList = (id:number) =>{
     return requests({method:'get',url:`/address/${id}`})
 }
-//保存用户信息
+//保存用户地址信息
 export const reqSaveAddress = (address:AddressState['address'])=>{
     return requests({method:'post',url:'/address/saveAddress',data:address})
 }
@@ -33,4 +33,8 @@ export const reqDeleteAddress = (id:string)=>{
 export const reqGetShop=(page:number,pageSize:number,valueRank:string)=>{
     return requests({method:'get',url:'/shop/showShops',params:{page,pageSize,valueRank}})
 
+}
+//更新地址
+export const reqUpdateAddress=(id:string,newAddress:AddressState['address'])=>{
+    return requests({method:'put',url:`/address/update/${id}`,data:newAddress})
 }
