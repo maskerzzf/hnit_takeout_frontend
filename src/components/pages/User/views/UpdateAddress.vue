@@ -53,6 +53,7 @@ const props = defineProps({id:{type:String},lat:{type:String},lng:{type:String},
 const checked = ref('1')
 const saveSuccess = "保存成功"
 const deleteSuccess = "删除成功"
+const updateSuccess = "更新成功"
 const router = useRouter()
 const route = useRoute()
 const store = useStore()
@@ -76,9 +77,16 @@ let newAddress = ref<AddressState["address"]>({
 let showDelete = ref(false)
 //选择收货地址
 const selectAddress = () =>{
-    router.replace({
+    if(props.id){
+        router.replace({
+            path:`/map/${props.id}`
+        })
+    }else{
+        router.replace({
         path:'/map'
     })
+    }
+    
 }
 //选择标签
 const chooseLabel=(event:Event)=>{
@@ -107,8 +115,13 @@ const saveAddress = async()=>{
         showToast('请输入正确的手机号')
     }else{
     newAddress.value.gender = checked.value
-    await store.dispatch('saveAddress',newAddress.value)
-   
+    newAddress.value.userId = store.state.user.user.id
+    if(props.id){
+        let address = {id:props.id,newAddress:newAddress.value}
+        await store.dispatch('updateAddress',address)
+    }else{
+        await store.dispatch('saveAddress',newAddress.value)
+    }        
 }
 }
 //删除地址
@@ -131,8 +144,12 @@ const saveFlag =  computed(()=>{
     return store.state.address.saveFlag
 })
 watch(saveFlag,(newValue,oldValue)=>{
-    showToast(newValue)
+    showToast(newValue) 
     if(newValue === saveSuccess ){
+        Object.keys(newAddress.value as AddressState["address"]).forEach((key)=> {          
+            newAddress.value[key as keyof typeof newAddress.value]= ''
+        })
+        
         router.replace('/address')
     }
 },{deep:true})
@@ -145,6 +162,18 @@ watch(deleteFlag,(newValue,olValue)=>{
         router.replace({path:'/address'})
     }
 })
+const updateFlag= computed(()=>{
+    return store.state.address.updateFlag
+})
+watch( updateFlag,(newValue,oldValue)=>{
+    showToast(newValue)
+    if(newValue === updateSuccess ){
+        Object.keys(newAddress.value as AddressState["address"]).forEach((key)=> {          
+            newAddress.value[key as keyof typeof newAddress.value]= ''
+        })
+        router.replace('/address')
+    }
+})
 const address = computed(()=>{
     return store.state.address.address
 })
@@ -153,16 +182,20 @@ watch(()=>{return address},(newValue,oldValue)=>{
 },{deep:true,immediate:true})
 watch(()=>{
     route.params
-},async(_newValue,_oldValue)=>{
-    newAddress.value.address = route.params.pioaddress as string
-    newAddress.value.lat = route.params.lat as string
-    newAddress.value.lng = route.params.lng as string
-    if(props.id){
-       await store.dispatch('showAddress',props.id)
-       showDelete.value = true
-    }
+},async(newValue,oldValue)=>{
+    if(route.params.lat){
+        newAddress.value.address = route.params.pioaddress as string
+        newAddress.value.lat = route.params.lat as string
+        newAddress.value.lng = route.params.lng as string
+    }      
 }, {deep: true,immediate:true})
-
+onMounted(()=>{
+    if(props.id && !route.params.lat){
+       store.dispatch('showAddress',props.id)
+    }else if(props.id){
+        showDelete.value = true
+    } 
+})
 </script>
 <style>
     .custom-title {

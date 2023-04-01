@@ -1,4 +1,4 @@
-import {   reqDeleteAddress, reqGetAddressList, reqSaveAddress, reqSetAddressDefault, reqShowAddress } from "@/api"
+import {   reqDeleteAddress, reqGetAddressList, reqSaveAddress, reqSetAddressDefault, reqShowAddress, reqUpdateAddress } from "@/api"
 import requests from "@/config/requests"
 import { ListDirection } from "vant"
 import { Numeric } from "vant/lib/utils/basic"
@@ -11,6 +11,7 @@ export interface AddressState {
     saveFlag:string,
     defaultFlag:string,
     deleteFlag:string, 
+    updateFlag:string,
     list :{
         id:number,
         name:string,
@@ -46,6 +47,7 @@ const state:AddressState = {
 saveFlag:'',
 defaultFlag:'',
 deleteFlag:'',
+updateFlag:'',
 list :[
     {
         id: 1,
@@ -84,53 +86,59 @@ defaultValue:{
 
 }
 const mutations:MutationTree<AddressState>={
-    SAVEADDRESS(State,saveFlag:string){
+    SAVE_ADDRESS(State,saveFlag:string){
         State.saveFlag = saveFlag
     },
-    GETADDRESSLIST(State,result:any){
+    GET_ADDRESSLIST(State,result:any){
         State.list = result.addressListDTOS
         State.disableList = result.addressDisabledListDTOS 
     },
-    SETADDRESSDEFAULT(State,defaultFlag:string){
+    SET_ADDRESSDEFAULT(State,defaultFlag:string){
         State.defaultFlag = defaultFlag
     },
-    SHOWADDRESS(State,address:AddressState['address']){
+    SHOW_ADDRESS(State,address:AddressState['address']){
         State.address = address
         
     },
-    DELETEADDRESS(State,deleteFlag:string){
+    DELETE_ADDRESS(State,deleteFlag:string){
         State.deleteFlag = deleteFlag
+    },
+    UPDATE_ADDRESS(State,updateFlag){
+        State.updateFlag= updateFlag
     }
 }
 const actions:ActionTree<AddressState,State>={
     async getAddressList({commit},id:number){
         let result  =await reqGetAddressList(id)
         if(result.code == 0){
-            commit('GETADDRESSLIST',result.data)
+            commit('GET_ADDRESSLIST',result.data)
         }
     },
     async saveAddress({commit},newAddress:AddressState["address"]){    
         let result = await reqSaveAddress(newAddress)
-           commit('SAVEADDRESS',result.description)
+           commit('SAVE_ADDRESS',result.description)
         
     },
     async setAddressDefault({commit},defaultValues:AddressState['defaultValue']){
         let id:Numeric = defaultValues.id
         let userId:string = defaultValues.userId
         let result = await reqSetAddressDefault(id,userId)
-        commit('SETADDRESSDEFAULT',result.description)
+        commit('SET_ADDRESSDEFAULT',result.description)
     },
     async showAddress({commit},id:string){
         let result = await reqShowAddress(id)
         if(result.code==0){
-            commit('SHOWADDRESS',result.data)
+            commit('SHOW_ADDRESS',result.data)
         }
     },
     async deleteAddress({commit},id:string){
         let result = await reqDeleteAddress(id)
-        console.log(result)
-        commit('DELETEADDRESS',result.description)
+        commit('DELETE_ADDRESS',result.description)
         
+    },
+    async updateAddress({commit},{id,newAddress}){
+        let result = await reqUpdateAddress(id,newAddress)
+        commit('UPDATE_ADDRESS',result.description)        
     }
 }
 export default{

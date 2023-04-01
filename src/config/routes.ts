@@ -18,6 +18,6 @@ const routes = [
     { path:'/phone',name:'Phone',component:Phone},
     { path:'/shop',name:'Shop',component:Shop},
     { path:'/updateAddress/:lat?/:lng?/:pioaddress?/:id?',name:'UpdateAddress',component:UpdateAddress,props:true},
-    { path:'/map',name:'Map',component:Map}
+    { path:'/map/:id?',name:'Map',component:Map,props:true}
 ]
 export default routes
