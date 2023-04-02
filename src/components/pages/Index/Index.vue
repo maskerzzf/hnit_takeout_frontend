@@ -49,14 +49,22 @@
 <div style="margin-top: 10px; background-color: white;"  @click="goRank()">
   <h3 style="margin-left: 20px; padding-top: 10px;">商家</h3>
   <van-dropdown-menu ref="rank">
-  <van-dropdown-item v-model="valueRank" :options="optionRank" />
+  <van-dropdown-item v-model="valueRank" :options="optionRank" @click="chooseRankValue" />
 </van-dropdown-menu>
+<van-list
+  v-model:loading="loading"
+  :finished="finished"
+  finished-text="没有更多了"
+  @load="onLoad"
+>
 <van-card
   v-for="(item,index) in shopList"
   :key="index"
   :ref="item.id"
   :thumb="item.images"
   :title="item.name"
+  :data-shop="item.id"
+  @click="chooseShop($event)"
   style="background-color: white;margin-top:2px;"
 > 
 <template #desc>
@@ -68,6 +76,9 @@
     <van-tag plain type="primary" style="margin-right: 4px;">配送费{{ item.distribution }}</van-tag>
   </template>
 </van-card>
+
+</van-list>
+
 <div style="height: 65px; background-color: white;"></div>
 </div>
 </template>
@@ -79,6 +90,8 @@ import {useRouter} from 'vue-router'
 const router =useRouter()
 const rank = ref(null)
 const store = useStore()
+const loading = ref(false)
+const finished = ref(false)
 const shopList = ref<ShopState['shop']>()
 const goSearch=()=>{
     router.push('/search')
@@ -97,11 +110,30 @@ const optionRank = [
 const showShop = async(valueRank:string)=>{
   await store.dispatch('getShop',valueRank)
 }
+//选择店铺
+const chooseShop = async(e:Event)=>{
+  let id = (e.currentTarget as Element).getAttribute('data-shop')
+  //console.log((e.currentTarget as Element).getAttribute('data-shop'))
+  router.push(`/shop/${id}`)
+}
+//滑动展示
+const onLoad = async()=>{
+  await store.dispatch('loadShop',valueRank.value)
+  loading.value = false;
+}
+//选择标签
+const chooseRankValue=async ()=>{
+  await store.dispatch('getShop',valueRank.value)
+}
 const shop = computed(()=>{return store.state.shop.shop})
 watch(()=>{return shop},(newValue,oldValue)=>{
   shopList.value = newValue.value  as ShopState['shop']
   
 },{deep:true,immediate:true})
+const isFinished = computed(()=>{return store.state.shop.finshed})
+watch(isFinished,(newValue,oldValue)=>{
+  finished.value = newValue
+})
 onBeforeMount(async()=>{
   await showShop(valueRank.value)
 })

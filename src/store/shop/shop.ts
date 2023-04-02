@@ -1,10 +1,11 @@
-import { reqGetShop } from "@/api"
+import { reqGetShop, reqGetShopDetail } from "@/api"
 import { ActionTree, MutationTree } from "vuex"
 import { State } from ".."
 
 export interface ShopState {
     page:number,
     pageSize:number,
+    finshed:boolean,
     shop:{
         id:string,
         name:string,
@@ -20,8 +21,9 @@ export interface ShopState {
     }[]
 }
 const state:ShopState = {
-    page:0,
-    pageSize:10,
+    page:1,
+    pageSize:1,
+    finshed:false,
     shop:[{
         id:'',
         name:'',
@@ -37,20 +39,39 @@ const state:ShopState = {
     }]
 }
 const mutations:MutationTree<ShopState> = {
-    GETSHOP(State,shop:ShopState['shop']){
-        if(state.page === 0){
-        State.shop=shop
+    GET_SHOP(State,shop:ShopState['shop']){  
+        if(shop.length != 0){
+            State.shop=shop
         }else{
-            State.shop.concat(shop)
-            state.page+=10
+            State.finshed = true
+        }      
+        
+    },
+    LOAD_SHOP(State,shop:ShopState['shop']){
+        if(shop.length != 0){
+            State.shop=State.shop.concat(shop)
+        }else{
+            State.finshed = true
         }
+        
     }
 }
 const actions:ActionTree<ShopState,State>={
     async getShop({commit,state},valueRank:string){
         let result = await reqGetShop(state.page,state.pageSize,valueRank)
         if(result.code == 0){
-            commit('GETSHOP',result.data)
+            commit('GET_SHOP',result.data)
+        }
+    },
+    async getShopDetail({commit},id:string){
+        let result = await reqGetShopDetail(id)
+        console.log(result)
+    },
+    async loadShop({commit},valueRank:string){
+        state.page++
+        let result = await reqGetShop(state.page,state.pageSize,valueRank)
+        if(result.code == 0){
+            commit('LOAD_SHOP',result.data)
         }
     }
 }

@@ -38,3 +38,7 @@ export const reqGetShop=(page:number,pageSize:number,valueRank:string)=>{
 export const reqUpdateAddress=(id:string,newAddress:AddressState['address'])=>{
     return requests({method:'put',url:`/address/update/${id}`,data:newAddress})
 }
+//获取店铺详细信息
+export const reqGetShopDetail=(id:string)=>{
+    return requests({method:'get',url:`/shop/${id}`})
+}
