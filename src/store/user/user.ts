@@ -20,10 +20,10 @@ let state:UserState ={
     }
 }
 let mutations:MutationTree<UserState>={
-    GETCODE(state){
+    GET_CODE(state){
                 
     },
-    GETUSERINFO(state,data){
+    GET_USERINFO(state,data){
         state.token=data.token
         state.user = data.userDTO
         window.localStorage.setItem('token',data.token)
@@ -39,7 +39,7 @@ let actions:ActionTree<UserState,State> = {
     async getUserInfo(context:{commit:Commit},login:{phone:string,code:string}){
         let result = await reqGetUserInfo(login)
         console.log(result.data)
-        context.commit('GETUSERINFO',result.data)
+        context.commit('GET_USERINFO',result.data)
     }
 }
 // let getters:GetterTree<UserState,State> ={
