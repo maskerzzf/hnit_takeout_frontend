@@ -48,6 +48,7 @@ const mutations:MutationTree<ShopState> = {
         
     },
     LOAD_SHOP(State,shop:ShopState['shop']){
+        console.log(shop)
         if(shop.length != 0){
             State.shop=State.shop.concat(shop)
         }else{

@@ -119,7 +119,9 @@ const chooseShop = async(e:Event)=>{
 //滑动展示
 const onLoad = async()=>{
   await store.dispatch('loadShop',valueRank.value)
+  //console.log("1")
   loading.value = false;
+  finished.value = store.state.shop.finshed
 }
 //选择标签
 const chooseRankValue=async ()=>{
@@ -130,10 +132,6 @@ watch(()=>{return shop},(newValue,oldValue)=>{
   shopList.value = newValue.value  as ShopState['shop']
   
 },{deep:true,immediate:true})
-const isFinished = computed(()=>{return store.state.shop.finshed})
-watch(isFinished,(newValue,oldValue)=>{
-  finished.value = newValue
-})
 onBeforeMount(async()=>{
   await showShop(valueRank.value)
 })
