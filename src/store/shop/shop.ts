@@ -39,20 +39,20 @@ const state:ShopState = {
     }]
 }
 const mutations:MutationTree<ShopState> = {
-    GET_SHOP(State,shop:ShopState['shop']){  
+    GET_SHOP(state,shop:ShopState['shop']){  
         if(shop.length != 0){
-            State.shop=shop
+            state.shop=shop
         }else{
-            State.finshed = true
+            state.finshed = true
         }      
         
     },
-    LOAD_SHOP(State,shop:ShopState['shop']){
-        console.log(shop)
+    LOAD_SHOP(state,shop:ShopState['shop']){
+       
         if(shop.length != 0){
-            State.shop=State.shop.concat(shop)
+            state.shop=state.shop.concat(shop)
         }else{
-            State.finshed = true
+            state.finshed = true
         }
         
     }

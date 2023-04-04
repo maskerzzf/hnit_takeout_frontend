@@ -117,9 +117,8 @@ const chooseShop = async(e:Event)=>{
   router.push(`/shop/${id}`)
 }
 //滑动展示
-const onLoad = async()=>{
-  await store.dispatch('loadShop',valueRank.value)
-  //console.log("1")
+const onLoad = ()=>{
+  store.dispatch('loadShop',valueRank.value)
   loading.value = false;
   finished.value = store.state.shop.finshed
 }
