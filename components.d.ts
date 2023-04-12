@@ -26,6 +26,7 @@ declare module '@vue/runtime-core' {
     UpdateAddress: typeof import('./src/components/pages/User/views/UpdateAddress.vue')['default']
     User: typeof import('./src/components/pages/User/User.vue')['default']
     VanAddressList: typeof import('vant/es')['AddressList']
+    VanBackTop: typeof import('vant/es')['BackTop']
     VanButton: typeof import('vant/es')['Button']
     VanButtton: typeof import('vant/es')['Buttton']
     VanCard: typeof import('vant/es')['Card']

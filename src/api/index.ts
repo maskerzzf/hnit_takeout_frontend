@@ -42,3 +42,23 @@ export const reqUpdateAddress=(id:string,newAddress:AddressState['address'])=>{
 export const reqGetShopDetail=(id:string)=>{
     return requests({method:'get',url:`/shop/${id}`})
 }
+//获取满减信息
+export const reqGetFullReduction= (id:string)=>{
+    return requests({method:'get',url:`/shop/fullReduction/${id}`})
+}
+//是否收藏
+export const reqIsCollected = (shopId:string,userId:string)=>{
+    return requests({method:'get',url:`/shop/isCollected/${userId}/${shopId}`})
+}
+//收藏or取消收藏
+export const reqChangeCollected=(shopId:string,userId:string,isCollectedFlag:boolean)=>{
+    return requests({method:'put',url:`/shop/changeCollected/${userId}/${shopId}/${isCollectedFlag}`})
+}
+//获取菜品分类
+export const reqGetCategory=(shopId:string)=>{
+    return requests({method:'get',url:`/shop/category/${shopId}`})
+}
+//获取菜品
+export const reqGetDish=(id:string)=>{
+    return requests({method:'get',url:`/shop/category/items/${id}`})
+}
