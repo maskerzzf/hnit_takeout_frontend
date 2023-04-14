@@ -140,10 +140,10 @@ const deleteAddress = ()=>{
     });
     
 }
-const saveFlag =  computed(()=>{
+const saveFlagStore =  computed(()=>{
     return store.state.address.saveFlag
 })
-watch(saveFlag,(newValue,oldValue)=>{
+watch(saveFlagStore,(newValue,oldValue)=>{
     showToast(newValue) 
     if(newValue === saveSuccess ){
         Object.keys(newAddress.value as AddressState["address"]).forEach((key)=> {          
@@ -153,19 +153,19 @@ watch(saveFlag,(newValue,oldValue)=>{
         router.replace('/address')
     }
 },{deep:true})
-const deleteFlag = computed(()=>{
+const deleteFlagStore = computed(()=>{
     return store.state.address.deleteFlag
 })
-watch(deleteFlag,(newValue,olValue)=>{
+watch(deleteFlagStore,(newValue,olValue)=>{
     showToast(newValue)
     if(newValue == deleteSuccess){
         router.replace({path:'/address'})
     }
 })
-const updateFlag= computed(()=>{
+const updateFlagStore= computed(()=>{
     return store.state.address.updateFlag
 })
-watch( updateFlag,(newValue,oldValue)=>{
+watch( updateFlagStore,(newValue,oldValue)=>{
     showToast(newValue)
     if(newValue === updateSuccess ){
         Object.keys(newAddress.value as AddressState["address"]).forEach((key)=> {          
@@ -174,10 +174,10 @@ watch( updateFlag,(newValue,oldValue)=>{
         router.replace('/address')
     }
 })
-const address = computed(()=>{
+const addressStore = computed(()=>{
     return store.state.address.address
 })
-watch(()=>{return address},(newValue,oldValue)=>{ 
+watch(()=>{return addressStore},(newValue,oldValue)=>{ 
     newAddress.value = newValue.value
 },{deep:true,immediate:true})
 watch(()=>{

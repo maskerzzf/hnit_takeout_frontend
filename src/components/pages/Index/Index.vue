@@ -58,7 +58,7 @@
   @load="onLoad"
 >
 <van-card
-  v-for="(item,index) in shopList"
+  v-for="(item,index) in shops"
   :key="index"
   :ref="item.id"
   :thumb="item.images"
@@ -81,6 +81,7 @@
 
 <div style="height: 65px; background-color: white;"></div>
 </div>
+<van-back-top />
 </template>
 <script setup lang="ts">
 import { useStore } from '@/store';
@@ -92,7 +93,7 @@ const rank = ref(null)
 const store = useStore()
 const loading = ref(false)
 const finished = ref(false)
-const shopList = ref<ShopState['shop']>()
+const shops = ref<ShopState['shopList']>()
 const goSearch=()=>{
     router.push('/search')
 }
@@ -117,21 +118,21 @@ const chooseShop = async(e:Event)=>{
   router.push(`/shop/${id}`)
 }
 //滑动展示
-const onLoad = ()=>{
-  store.dispatch('loadShop',valueRank.value)
+const onLoad = async()=>{
+  await store.dispatch('loadShop',valueRank.value)
   loading.value = false;
   finished.value = store.state.shop.finshed
 }
 //选择标签
 const chooseRankValue=async ()=>{
+  finished.value = false
   await store.dispatch('getShop',valueRank.value)
 }
-const shop = computed(()=>{return store.state.shop.shop})
-watch(()=>{return shop},(newValue,oldValue)=>{
-  shopList.value = newValue.value  as ShopState['shop']
-  
+let shopListStore = computed(()=>{return store.state.shop.shopList})
+watch(()=>{return shopListStore},(newValue,oldValue)=>{
+  shops.value = newValue.value  as ShopState['shopList']  
 },{deep:true,immediate:true})
-onBeforeMount(async()=>{
+onMounted(async()=>{
   await showShop(valueRank.value)
 })
 </script>
