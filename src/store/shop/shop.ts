@@ -42,7 +42,37 @@ export interface ShopState {
         shopId:string,
         name:string,
     }[],
-    categoryItems:{text?:string}[]
+    categoryItems:{text?:string}[],
+    dishList:{
+        id:string,
+        name:string,
+        category:string,
+        price:number,
+        description:string,
+        score:number,
+        sold:number,
+        image:string,
+        dish_flavorVOList:{
+            id:string,
+            flavorName:string,
+            flavorValue:string
+        }[]
+    }[],
+    newDishList:{
+        id:string,
+        name:string,
+        category:string,
+        price:number,
+        description:string,
+        score:number,
+        sold:number,
+        image:string,
+        dish_flavorVOList:{
+            id:string,
+            flavorName:string,
+            flavorValue:string[]
+        }[]
+    }[]
 }
 const state:ShopState = {
     page:1,
@@ -79,7 +109,35 @@ const state:ShopState = {
     fullReductionMap:new Map(),
     isCollected:false,
     categorys:[{id:'',shopId:'',name:''}],
-    categoryItems:[]
+    categoryItems:[],
+    dishList:[{
+        id:'',
+        name:'',
+        category:'',
+        price:0,
+        description:'',
+        score:0,
+        sold:0,
+        image:'',
+        dish_flavorVOList:[{
+            id:'',
+            flavorName:'',
+            flavorValue:'',
+        }]}],
+        newDishList:[{
+            id:'',
+            name:'',
+            category:'',
+            price:0,
+            description:'',
+            score:0,
+            sold:0,
+            image:'',
+            dish_flavorVOList:[{
+                id:'',
+                flavorName:'',
+                flavorValue:[''],
+            }]}],
 }
 const mutations:MutationTree<ShopState> = {
     GET_SHOP(state,shop:ShopState['shopList']){  
@@ -117,6 +175,16 @@ const mutations:MutationTree<ShopState> = {
             objArray.push(obj)    
         })
         state.categoryItems=lodash.cloneDeep(objArray)
+        
+    },
+    GET_DISH(state,dishArray:ShopState['dishList']){
+        let list:string[]=[]
+        dishArray.forEach(dish=>{
+            dish.dish_flavorVOList.forEach(item=>{               
+               list.push(JSON.parse(item.flavorValue))   
+            })
+        })
+        state.dishList = lodash.cloneDeep(dishArray)
         
     }
 }
@@ -163,10 +231,19 @@ const actions:ActionTree<ShopState,State>={
         }
     },
     async getDish({commit}){
+        let dishArray:any = []
+        
         for(let item  of state.categorys){
             let result = await reqGetDish(item.id)
-            console.log(result)
+            if(result.code ==0){
+                dishArray =dishArray.concat(result.data)
+            }else{
+                dishArray = dishArray.concat({})
+            }
         }
+        
+        commit('GET_DISH',dishArray)
+
     }
     
 }

@@ -30,19 +30,19 @@
     >
       <template #content>
         <div class="wrapper" ref="wrapper" style="height: 100px;">
-          <div class="content" ref="shop">
-          <div ref="dish0">
-          <div>标题</div>
+          <div class="content" >
+          <div :ref="`dish${index}`" v-for="dish,index in dishList" :key="dish.id">
             <van-card
-            price="价格"
-            desc="描述信息"
-            title="商品标题"
-            thumb="https://fastly.jsdelivr.net/npm/@vant/assets/ipad.jpeg"
+            :price="dish.price"
+            :desc="dish.description"
+            :title="dish.name"
+            :thumb="dish.image"
             style="background-color: white;"
             >
               <template #footer>
-                  <van-button size="mini">按钮</van-button>
-                  <van-button size="mini">按钮</van-button>
+                  <van-button size="mini" v-if="dish.dish_flavorVOList.length != 0" type="primary" round @click="chooseFlavor(dish.dish_flavorVOList,dish.id,dish.price,dish.image)">规格</van-button>
+                  <van-button size="mini"  v-if="dish.dish_flavorVOList.length == 0" style="border-radius: 100%; width: 25px;height: 25px;">-</van-button>
+                  <van-button size="mini" type="primary" v-if="dish.dish_flavorVOList.length == 0" style="border-radius: 100%; width: 25px;height: 25px;" @click="">+</van-button>                  
               </template>
             </van-card>
           </div>
@@ -50,12 +50,26 @@
         </div>
       </template>
   </van-tree-select>
+  <van-dialog v-model:show="showFlavors" title="选择口味" showCancelButton @confirm="confirmFlavor" @cancel="cancelFlavor">
+    <template #default >
+      <div style="padding:10px;">
+        <div v-for="item,flavorIndex in newDishFlavor">
+      <div style="font-size: 15px;">{{ item.flavorName }}</div>
+    <van-tag 
+    v-for="value in JSON.parse(item.flavorValue)" 
+    type="primary" size="large" message-align="right" 
+    plain style="margin-top: 10px; margin-right:10px;margin-bottom: 10px;" 
+    @click="chooseFlavorDetail(value,$event,flavorIndex,item.id)" :ref="`flavor${item.id}`">{{ value }}</van-tag>
+    </div>
+      </div> 
+    </template>                  
+  </van-dialog>
     <div style="position: fixed; display: flex;justify-content: space-between; width: 300px; height: 50px; margin-left: 10%; bottom: 30px; border: 1px skyblue solid; border-radius: 25px; background-color: skyblue; line-height:50px ;">
-      <div style="border-radius:25px 0 0 25px ; width: 170px; background-color: black; color: white; padding-left: 30px;">价格</div>
+      <div style="border-radius:25px 0 0 25px ; width: 170px; background-color: black; color: white; padding-left: 30px;"></div>
       <div style="margin-right: 30px;">去结算</div>
       </div>
   </van-tab>
-  <van-tab title="套餐">内容 2</van-tab>
+  <van-tab title="套餐"></van-tab>
   <van-tab title="评价">
     <div style="display: flex;justify-content: space-between; height:10px;">
       <div style="width: 70px;">
@@ -79,19 +93,67 @@ import BScroll from "better-scroll"
 import { BScrollConstructor } from '@better-scroll/core/dist/types/BScroll';
 import { computed } from '@vue/reactivity';
 import { ShopState } from '@/store/shop/shop';
-import { tsNeverKeyword } from '@babel/types';
-import { showToast } from 'vant';
+import lodash from 'lodash'
 const store = useStore()
 const router = useRouter()
 const route = useRoute()
+//获取dom
 let instance= getCurrentInstance()
+//激活tab
 const active = ref(0)
+let beforeTarget = ref<HTMLElement|null>(null)
+//右侧菜单滚动距离
 const scrollDistance = ref(0)
+//具体口味
+let flavorMap:Map<string,string> = new Map()
+//右侧dom高度
 const heightList = ref<number[]>([0])
-const activeIndex = ref(1)
+//左侧激活
+const activeIndex = ref(0)
+//菜品id
+let dishId:string = ''
+//收藏
 const isCollected = ref<boolean>(false)
+//满减
 let fullReductionInfo = ref<Map<number,string>>()
-const items = ref([{ text: '套餐1' }, { text: '套餐2' },{ text: '套餐3' },{ text: '套餐4' }])
+//左侧菜单列表
+const items = ref([{ text: '' }])
+//口味弹窗
+const showFlavors=ref(false)
+//购物车
+const shopCart=ref<shopCartList['shopCart']>([])
+const dishList = ref<ShopState['dishList']>([{
+        id:'',
+        name:'',
+        category:'',
+        price:0,
+        description:'',
+        score:0,
+        sold:0,
+        image:'',
+        dish_flavorVOList:[{
+          id:'',
+          flavorName:'',
+          flavorValue:'',
+        }]}])
+interface shopCartList{
+  shopCart:{
+    id:string,
+    name:string,
+    image:string,
+    countNum:number,
+    price:number,
+    flavorMap: Map<string,string>
+  }[]
+}
+interface dishFlavor{
+      dishFlavorList:{
+        id:string,
+        flavorName:string,
+        flavorValue:string,
+      }[]        
+}
+let newDishFlavor = ref<dishFlavor['dishFlavorList']>()
 const value = ref(3.3)
 let shopDetail = ref<ShopState['shop']>({
         id:'',
@@ -122,10 +184,10 @@ const initBS= ()=>{
       }
     }
   })
+  scroll.refresh()
 }
 //获取商品列表高度
 const getCategoryListHeight = ()=>{
-  //console.log()
   for(let i:number=0;i<items.value.length;i++){
     let dish:string = 'dish'+i
     let DOMheight:number = ((instance?.refs[dish] as HTMLElement).offsetHeight  as number)+heightList.value[i]
@@ -143,6 +205,47 @@ const changeCollected=async ()=>{
   let shopId = route.params.id
   let isCollectedFlag:boolean = isCollected.value
   await store.dispatch('changeCollected',{userId,shopId,isCollectedFlag})
+}
+//选择口味
+const chooseFlavor=(flavors:dishFlavor['dishFlavorList'],id:string,price:number,image:string)=>{
+    dishId=id
+    showFlavors.value=true
+    newDishFlavor.value =flavors 
+}
+//选择具体的口味
+const chooseFlavorDetail=(flavorItem:string,e:Event,index:number,id:string)=>{
+  (instance?.refs[`flavor${id}`] as []).forEach(item=>{
+    (item as any).$el.classList.add("van-tag--plain")
+  }); 
+ (e.target as Element).classList.remove("van-tag--plain") 
+  if(flavorMap.has(id)){
+    flavorMap.delete(id)
+    flavorMap.set(id,(e.target as HTMLSpanElement).innerText)
+  }else{
+    flavorMap.set(id,(e.target as HTMLSpanElement).innerText)
+  }
+}
+//确认口味
+const confirmFlavor= ()=>{
+  const newDish  =  dishList.value.filter(item=>{
+    return item.id == dishId
+  })
+  let {price,image,name} = newDish[0];
+  shopCart.value.push({
+    id:dishId,
+    countNum:1,
+    price:price,
+    image:image,
+    name:name,
+    flavorMap:flavorMap
+  })
+  dishId =''
+  flavorMap.clear()
+}
+//取消口味
+const cancelFlavor = ()=>{
+  dishId=''
+  flavorMap.clear()
 }
 //初始化店铺内容
 const initShop = async()=>{
@@ -167,15 +270,25 @@ watch(fullReductionStore,(newValue,oldValue)=>{
   isCollected.value = newValue
  })
  const categoryItemsStore=computed(()=>{return store.state.shop.categoryItems})
- watch(categoryItemsStore,(newValue,oldValue)=>{
+ watch(categoryItemsStore,async(newValue,oldValue)=>{
   items.value = newValue as {text:string}[]
+  await nextTick(() => {
+        scroll && scroll.refresh()
+  })
   
+ },{deep:true})
+ const dishArryStore = computed(()=>{return store.state.shop.dishList})
+ watch(()=>{return dishArryStore.value},async(newValue,oldValue)=>{
+  dishList.value = lodash.cloneDeep(newValue)
+  await nextTick(() => {
+        scroll && scroll.refresh()
+  })
+  getCategoryListHeight() 
  },{deep:true})
  onMounted(async()=>{
   initShop()
   await nextTick()
-  initBS()
-  getCategoryListHeight()     
+  initBS() 
   }
   )
  </script>
